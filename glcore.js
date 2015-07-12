@@ -58,7 +58,7 @@ function Namespace(codename) {
 	this.codename = codename;
 	codename = codename.toLowerCase()
 	
-	if (this.codename.indexOf("version") > 0) {
+	if (codename.indexOf("version") > 0) {
 		// This is not a vendor / extension namespace
 		var regex = /gl_version_([0-9])_([0-9])/g;
 		var match = regex.exec(codename);
