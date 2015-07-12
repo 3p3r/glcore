@@ -98,6 +98,7 @@ function GlCoreParser() {
 	 * @see   Namespace
 	 */
 	this.ParseNamespaces = function() {
+		_namespaces = [];
 		var regex  = /#\s*ifndef\s+(GL_.+)\s*$/gm;
 		var source = new GlCoreHeader().GetSource();
 		
@@ -114,15 +115,12 @@ function GlCoreParser() {
 	 * @brief Returns the namespaces parsed from glcorearb.h
 	 */	
 	this.GetNamespaces = function() {
-		if (_namespaces.length == 0)
-			this.Parse();
 		return _namespaces;
 	}
 	
 	/*!
 	 * @fn    ExtractSources
 	 * @brief Extracts raw source codes for each namespace
-	 * @note  Needs Parse to be called first.
 	 */	
 	this.ExtractSources = function() {
 		var _ns = this.GetNamespaces();
@@ -139,7 +137,6 @@ function GlCoreParser() {
 	/*!
 	 * @fn    CleanSources
 	 * @brief Removes unnecessary code from sources
-	 * @note  Needs Parse to be called first.
 	 */	
 	this.CleanSources = function() {
 		var _ns = this.GetNamespaces();
@@ -154,7 +151,6 @@ function GlCoreParser() {
 	/*!
 	 * @fn    ParseTypes
 	 * @brief Parses simple typedefs out of the source, Like GLboolean.
-	 * @note  Needs Parse to be called first.
 	 */
 	this.ParseTypes = function() {
 		var _ns = this.GetNamespaces();
@@ -173,6 +169,10 @@ function GlCoreParser() {
 		});
 	}
 	
+	/*!
+	 * @fn    ParseDefines
+	 * @brief Parses defines out of the source, these will be enums.
+	 */
 	this.ParseDefines = function() {
 		var _ns = this.GetNamespaces();
 		_ns.forEach(function(namespace, index) {
@@ -200,6 +200,9 @@ function GlCoreParser() {
 		this.ParseTypes();
 		this.ParseDefines();
 	}
+	
+	// parse the header on construction
+	this.Parse();
 }
 
 module.exports = {
