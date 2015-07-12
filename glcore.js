@@ -30,14 +30,14 @@ function GlCoreHeader() {
  *        is wrapped inside #ifndef's. Therefore this script assumes a
  *        namespace starts with a #ifndef GL_**.
  *
- * @param codename the original name of the namespace (including GL_)
- * @param name     the actual name of the namespace
- * @param vendor   the vendor name of the namespace (ARB for example)
- * @param funptrs  represents all function pointers inside the namespace
- * @param structs  represents all forward declared structs of namespace
- * @param defines  represents all #defines of the namespace
- * @param protos   represents all function prototypes in the namespace
- * @param empty    whether if namespace is nothing but a namespace!
+ * @var   codename the original name of the namespace (including GL_)
+ * @var   name     the actual name of the namespace
+ * @var   vendor   the vendor name of the namespace (ARB for example)
+ * @var   funptrs  represents all function pointers inside the namespace
+ * @var   structs  represents all forward declared structs of namespace
+ * @var   defines  represents all #defines of the namespace
+ * @var   protos   represents all function prototypes in the namespace
+ * @var   empty    whether if namespace is nothing but a namespace!
  */
 function Namespace(codename) {
 	
