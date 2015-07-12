@@ -34,10 +34,9 @@ function GlCoreHeader() {
  * @var   name     the actual name of the namespace
  * @var   vendor   the vendor name of the namespace (ARB for example)
  * @var   source   raw source code for this namespace
- * @var   funptrs  represents all function pointers inside the namespace
  * @var   structs  represents all forward declared structs of namespace
  * @var   defines  represents all #defines of the namespace
- * @var   protos   represents all function prototypes in the namespace
+ * @var   commands represents all commands in the namespace
  * @var   types    represents all typedefs in the namespace
  * @var   empty    whether if namespace is nothing but a namespace!
  *
@@ -50,10 +49,9 @@ function Namespace(codename) {
 	this.name     = "";
 	this.vendor   = "";
 	this.source   = "";
-	this.funptrs  = [];
+	this.commands = [];
 	this.structs  = [];
 	this.defines  = [];
-	this.protos   = [];
 	this.types    = [];
 	this.empty    = false;
 	
@@ -190,6 +188,43 @@ function GlCoreParser() {
 	}
 	
 	/*!
+	 * @fn    ParseCommands
+	 * @brief Parses function pointers and their signature.
+	 */
+	this.ParseCommands = function() {
+		var _ns = this.GetNamespaces();
+		_ns.forEach(function(namespace, index) {
+			var regex = /.*(PFN[A-Z0-9]+).*/gm;
+			var match = regex.exec(namespace.source);
+			while (match != null) {
+				// [1] is ptrname
+				var command = {
+					'ptrname' : (match[1]).trim() ,
+					'funptr'  : (match[0]).trim() ,
+					'proto'   : '' ,
+					'name'    : ''
+				};
+				
+				// Let's find the prototype
+				var re_str =
+				   'GLAPI.*' + 
+				   command.ptrname.replace(/PFN|PROC/g, '') +
+				   '.*';
+				var re_obj = new RegExp(re_str, 'gmi');
+				command.proto = namespace.source.match(re_obj)[0];
+				
+				// Let's get the command name
+				re_str = command.ptrname.replace(/PFN|PROC/g, '');
+				re_obj = new RegExp(re_str, 'gi');
+				command.name = command.proto.match(re_obj)[0];
+				
+				_namespaces[index].commands.push(command);
+				match = regex.exec(namespace.source);
+			}
+		});
+	}
+	
+	/*!
 	 * @fn    Parse
 	 * @brief Parses the string source in GlCoreHeader.
 	 */		
@@ -199,6 +234,7 @@ function GlCoreParser() {
 		this.CleanSources();
 		this.ParseTypes();
 		this.ParseDefines();
+		this.ParseCommands();
 	}
 	
 	// parse the header on construction
