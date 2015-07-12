@@ -37,6 +37,7 @@ function GlCoreHeader() {
  * @var   structs  represents all forward declared structs of namespace
  * @var   defines  represents all #defines of the namespace
  * @var   protos   represents all function prototypes in the namespace
+ * @var   types    represents all typedefs in the namespace
  * @var   empty    whether if namespace is nothing but a namespace!
  *
  * @param codename the string extracted from #ifndef GL_**
@@ -51,6 +52,7 @@ function Namespace(codename) {
 	this.structs  = [];
 	this.defines  = [];
 	this.protos   = [];
+	this.types    = [];
 	this.empty    = false;
 	
 	// Do we have a valid codename ?
