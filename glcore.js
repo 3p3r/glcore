@@ -151,6 +151,11 @@ function GlCoreParser() {
 		});
 	}
 	
+	/*!
+	 * @fn    ParseTypes
+	 * @brief Parses simple typedefs out of the source, Like GLboolean.
+	 * @note  Needs Parse to be called first.
+	 */
 	this.ParseTypes = function() {
 		var _ns = this.GetNamespaces();
 		_ns.forEach(function(namespace, index) {
