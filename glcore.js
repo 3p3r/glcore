@@ -55,19 +55,20 @@ function Namespace(codename) {
 		throw "Invalid codename. It should start with GL_ prefix";
 	}
 	// store the codename
-	this.codename = codename.toLowerCase();
+	this.codename = codename;
+	codename = codename.toLowerCase()
 	
 	if (this.codename.indexOf("version") > 0) {
 		// This is not a vendor / extension namespace
 		var regex = /gl_version_([0-9])_([0-9])/g;
-		var match = regex.exec(this.codename);
+		var match = regex.exec(codename);
 		var version_major = match[1];
 		var version_minor = match[2];
 		this.name = "v" + version_major + version_minor;
 	} else {
 		// belongs to an extension and has a vendor
 		var regex = /gl_([a-z0-9]+)_(.+)/g;
-		var match = regex.exec(this.codename);
+		var match = regex.exec(codename);
 		var vendor = match[1];
 		var extname = match[2];
 		this.name = extname;
