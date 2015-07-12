@@ -111,6 +111,8 @@ function GlCoreParser() {
 	 * @note  Needs ParseNamespaces to be called first.
 	 */	
 	this.GetNamespaces = function() {
+		if (_namespaces.length == 0)
+			this.ParseNamespaces();
 		return _namespaces;
 	}
 }
