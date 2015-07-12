@@ -33,6 +33,7 @@ function GlCoreHeader() {
  * @var   codename the original name of the namespace (including GL_)
  * @var   name     the actual name of the namespace
  * @var   vendor   the vendor name of the namespace (ARB for example)
+ * @var   source   raw source code for this namespace
  * @var   funptrs  represents all function pointers inside the namespace
  * @var   structs  represents all forward declared structs of namespace
  * @var   defines  represents all #defines of the namespace
@@ -48,6 +49,7 @@ function Namespace(codename) {
 	this.codename = "";
 	this.name     = "";
 	this.vendor   = "";
+	this.source   = "";
 	this.funptrs  = [];
 	this.structs  = [];
 	this.defines  = [];
@@ -116,6 +118,23 @@ function GlCoreParser() {
 		if (_namespaces.length == 0)
 			this.ParseNamespaces();
 		return _namespaces;
+	}
+	
+	/*!
+	 * @fn    ExtractSources
+	 * @brief Extracts raw source codes for each namespace
+	 * @note  Needs ParseNamespaces to be called first.
+	 */	
+	this.ExtractSources = function() {
+		var _ns = this.GetNamespaces();
+		var _src = new GlCoreHeader().GetSource();
+		_ns.forEach(function(namespace, index) {
+			var regex_str =
+				'#\\s*define\\s+' + namespace.codename + '.*$' +
+				'([^]*)#\\s*endif.+' + namespace.codename + '.*$';
+			var regex = new RegExp(regex_str, 'gm');
+			_namespaces[index].source = ((regex.exec(_src))[1]).trim();
+		});
 	}
 }
 
