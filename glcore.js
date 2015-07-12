@@ -225,6 +225,25 @@ function GlCoreParser() {
 	}
 	
 	/*!
+	 * @fn    ParseStructs
+	 * @brief Parses struct forward decls
+	 * @note  This is unnecessary and it's mostly for cl_** but here for
+	 *        the sake of completeness it is included.
+	 */
+	this.ParseStructs = function() {
+		var _ns = this.GetNamespaces();
+		_ns.forEach(function(namespace, index) {
+			var regex = /struct\s+([a-zA-Z0-9_]+);$/gm;
+			var match = regex.exec(namespace.source);
+			
+			while(match != null) {
+				_namespaces[index].structs.push(match[1].trim());
+				match = regex.exec(namespace.source);
+			}
+		});
+	}
+	
+	/*!
 	 * @fn    Parse
 	 * @brief Parses the string source in GlCoreHeader.
 	 */		
@@ -235,6 +254,7 @@ function GlCoreParser() {
 		this.ParseTypes();
 		this.ParseDefines();
 		this.ParseCommands();
+		this.ParseStructs();
 	}
 	
 	// parse the header on construction
