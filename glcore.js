@@ -117,6 +117,7 @@ function GlCoreParser() {
 	}
 }
 
-var test = new GlCoreParser();
-test.ParseNamespaces();
-console.log(test.GetNamespaces());
+module.exports = {
+	'header' : GlCoreHeader ,
+	'parser' : GlCoreParser
+}
