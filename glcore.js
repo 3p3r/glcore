@@ -38,6 +38,9 @@ function GlCoreHeader() {
  * @var   defines  represents all #defines of the namespace
  * @var   protos   represents all function prototypes in the namespace
  * @var   empty    whether if namespace is nothing but a namespace!
+ *
+ * @param codename the string extracted from #ifndef GL_**
+ * @see   GlCoreParser::ParseNamespaces
  */
 function Namespace(codename) {
 	
