@@ -173,6 +173,22 @@ function GlCoreParser() {
 		});
 	}
 	
+	this.ParseDefines = function() {
+		var _ns = this.GetNamespaces();
+		_ns.forEach(function(namespace, index) {
+			var regex = /#\s*define\s+([A-Z_]+)\s+(.*)$/gm;
+			var match = regex.exec(namespace.source);
+			while (match != null) {
+				// [1] is name, [2] is its value
+				_namespaces[index].defines.push({
+					'name'  : (match[1]).trim() ,
+					'value' : (match[2]).trim()
+				});
+				match = regex.exec(namespace.source);
+			}
+		});
+	}
+	
 	/*!
 	 * @fn    Parse
 	 * @brief Parses the string source in GlCoreHeader.
@@ -182,6 +198,7 @@ function GlCoreParser() {
 		this.ExtractSources();
 		this.CleanSources();
 		this.ParseTypes();
+		this.ParseDefines();
 	}
 }
 
