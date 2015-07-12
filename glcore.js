@@ -136,6 +136,21 @@ function GlCoreParser() {
 			_namespaces[index].source = ((regex.exec(_src))[1]).trim();
 		});
 	}
+
+	/*!
+	 * @fn    CleanSources
+	 * @brief Removes unnecessary code from sources
+	 * @note  Needs ExtractSources to be called first.
+	 */	
+	this.CleanSources = function() {
+		var _ns = this.GetNamespaces();
+		_ns.forEach(function(namespace, index) {
+			var re = /#\s*ifdef.*|#\s*endif.*/g;
+			_namespaces[index].source = namespace.source.replace(re,'');
+			if (_namespaces[index].source.trim().length == 0)
+				_namespaces[index].empty = true;
+		});
+	}
 }
 
 module.exports = {
