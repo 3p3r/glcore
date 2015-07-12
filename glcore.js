@@ -79,12 +79,20 @@ function Namespace(codename) {
 	}
 };
 
+/*!
+ * @class GlCoreParser
+ * @brief This class uses source provided by GlCoreHeader and parses
+ *        all information needed to generate the final loader.
+ */
 function GlCoreParser() {
-	// An array holding all namespaces
-	_namespaces = [];
+	// An array holding all namespaces (members instances of Namespace)
+	var _namespaces = [];
 	
-	this.CodenameToName
-	
+	/*!
+	 * @fn    ParseNamespaces
+	 * @brief Attempts to parse all namespaces in the format of GL_**
+	 * @see   Namespace
+	 */
 	this.ParseNamespaces = function() {
 		var regex  = /#\s*ifndef\s+(GL_.+)\s*$/gm;
 		var source = new GlCoreHeader().GetSource();
@@ -97,6 +105,11 @@ function GlCoreParser() {
 		}
 	}
 	
+	/*!
+	 * @fn    GetNamespaces
+	 * @brief Returns the namespaces parsed from glcorearb.h
+	 * @note  Needs ParseNamespaces to be called first.
+	 */	
 	this.GetNamespaces = function() {
 		return _namespaces;
 	}
