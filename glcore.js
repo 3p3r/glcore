@@ -151,6 +151,23 @@ function GlCoreParser() {
 		});
 	}
 	
+	this.ParseTypes = function() {
+		var _ns = this.GetNamespaces();
+		_ns.forEach(function(namespace, index) {
+			var regex = // There is no pointer typedef like GLHandle ...
+		    /typedef\s+([a-zA-Z0-9]+\s+[a-zA-Z0-9]*)\s+([a-zA-Z0-9]+);/gm;
+			var match = regex.exec(namespace.source);
+			while (match != null) {
+				// [1] is type, [2] is its alias
+				_namespaces[index].types.push({
+					'type'  : (match[1]).trim() ,
+					'alias' : (match[2]).trim()
+				});
+				match = regex.exec(namespace.source);
+			}
+		});
+	}
+	
 	/*!
 	 * @fn    Parse
 	 * @brief Parses the string source in GlCoreHeader.
@@ -159,6 +176,7 @@ function GlCoreParser() {
 		this.ParseNamespaces();
 		this.ExtractSources();
 		this.CleanSources();
+		this.ParseTypes();
 	}
 }
 
