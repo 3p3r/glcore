@@ -112,18 +112,17 @@ function GlCoreParser() {
 	/*!
 	 * @fn    GetNamespaces
 	 * @brief Returns the namespaces parsed from glcorearb.h
-	 * @note  Needs ParseNamespaces to be called first.
 	 */	
 	this.GetNamespaces = function() {
 		if (_namespaces.length == 0)
-			this.ParseNamespaces();
+			this.Parse();
 		return _namespaces;
 	}
 	
 	/*!
 	 * @fn    ExtractSources
 	 * @brief Extracts raw source codes for each namespace
-	 * @note  Needs ParseNamespaces to be called first.
+	 * @note  Needs Parse to be called first.
 	 */	
 	this.ExtractSources = function() {
 		var _ns = this.GetNamespaces();
@@ -140,7 +139,7 @@ function GlCoreParser() {
 	/*!
 	 * @fn    CleanSources
 	 * @brief Removes unnecessary code from sources
-	 * @note  Needs ExtractSources to be called first.
+	 * @note  Needs Parse to be called first.
 	 */	
 	this.CleanSources = function() {
 		var _ns = this.GetNamespaces();
@@ -150,6 +149,16 @@ function GlCoreParser() {
 			if (_namespaces[index].source.trim().length == 0)
 				_namespaces[index].empty = true;
 		});
+	}
+	
+	/*!
+	 * @fn    Parse
+	 * @brief Parses the string source in GlCoreHeader.
+	 */		
+	this.Parse = function() {
+		this.ParseNamespaces();
+		this.ExtractSources();
+		this.CleanSources();
 	}
 }
 
