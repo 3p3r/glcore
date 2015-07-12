@@ -82,6 +82,82 @@ function Namespace(codename) {
 		this.name = extname;
 		this.vendor = vendor;
 	}
+	
+	// Calculates namespace before current...
+	function _prevNamespace(major, minor) {
+		// Standard skipped some of the versions...
+		var ret = { min: 0, maj: 0 };
+		ret.min = minor - 1;
+		if (ret.min < 0) {
+			ret.maj = major - 1;
+			ret.min = 5;
+		} else {
+			ret.maj = major;
+		}
+		
+		if (ret.maj == 2 && ret.min > 1) ret.min = 1;
+		if (ret.maj == 3 && ret.min > 3) ret.min = 3;
+		
+		return ret;
+	}
+	
+	this.AsString = function() {
+		var ns = 	(this.vendor.length == 0
+					? 'api' : this.vendor ).toLowerCase();
+		var str = '';
+		
+		str += '// Generated from ' + this.codename + '\r\n';
+		str += 'namespace ' + ns + ' {\r\n';
+		str += 'namespace ' + this.name + ' {\r\n';
+		
+		if (	this.vendor.length == 0 &&
+				!(this.major == 1 && this.minor == 0)) {
+			str += '\r\n';
+			var v = _prevNamespace(this.major, this.minor);
+			str += 	'using namespace ' + ns + '::v'
+					+ v.maj + '' + v.min + ';\r\n';
+		}
+		
+		if (this.vendor.length > 0) {
+			str += 'using namespace api::v45;\r\n';
+		}
+		
+		if (this.types.length > 0) {
+			str += '\r\n';
+			this.types.forEach(function(type) {
+				str += 	'typedef ' + type.type +
+						' ' + type.alias + ';\r\n';
+			});
+			str += '\r\n';
+		}
+		
+		if (this.defines.length > 0) {
+			str += 'enum defines {\r\n';
+			this.defines.forEach(function(define) {
+				str += 	define.name +
+						' = ' + define.value + ',\r\n';
+			});
+			str += '}; //!defines\r\n';
+			str += '\r\n';
+		}
+		
+		if (this.commands.length > 0) {
+			this.commands.forEach(function(cmd) {
+				if (cmd.ptrname == 'GLDEBUGPROC' ||
+					cmd.ptrname == 'GLDEBUGPROCARB') {
+					str += cmd.funptr + '\r\n';
+				}
+				str += 	cmd.proto	.replace('GLAPI ', '')
+									.replace('APIENTRY ', '')
+									+ '\r\n';
+			});
+			str += '\r\n';
+		}
+		
+		str += '} //!namespace ' + ns + '\r\n';
+		str += '} //!namespace ' + this.name + '\r\n';
+		return str;
+	}
 };
 
 /*!
@@ -156,8 +232,8 @@ function GlCoreParser() {
 	this.ParseTypes = function() {
 		var _ns = this.GetNamespaces();
 		_ns.forEach(function(namespace, index) {
-			var regex = // There is no pointer typedef like GLHandle ...
-		    /typedef\s+([a-zA-Z0-9]+\s+[a-zA-Z0-9]*)\s+([a-zA-Z0-9]+);/gm;
+			var regex =
+		    /typedef\s+([a-zA-Z0-9_]+\s*[a-zA-Z0-9_]*)\s+([\*a-zA-Z0-9]+);/gm;
 			var match = regex.exec(namespace.source);
 			while (match != null) {
 				// [1] is type, [2] is its alias
@@ -197,7 +273,7 @@ function GlCoreParser() {
 	this.ParseCommands = function() {
 		var _ns = this.GetNamespaces();
 		_ns.forEach(function(namespace, index) {
-			var regex = /.*(PFN[A-Z0-9]+).*/gm;
+			var regex = /.*\(APIENTRYP*\s*\**([^\)]+)\).*$/gm;
 			var match = regex.exec(namespace.source);
 			while (match != null) {
 				// [1] is ptrname
@@ -208,18 +284,21 @@ function GlCoreParser() {
 					'name'    : ''
 				};
 				
-				// Let's find the prototype
-				var re_str =
-				   'GLAPI.*' + 
-				   command.ptrname.replace(/PFN|PROC/g, '') +
-				   '.*';
-				var re_obj = new RegExp(re_str, 'gmi');
-				command.proto = namespace.source.match(re_obj)[0];
-				
-				// Let's get the command name
-				re_str = command.ptrname.replace(/PFN|PROC/g, '');
-				re_obj = new RegExp(re_str, 'gi');
-				command.name = command.proto.match(re_obj)[0];
+				if (command.funptr.indexOf('PFN') > 0)
+				{
+					// Let's find the prototype
+					var re_str =
+					   'GLAPI.*' + 
+					   command.ptrname.replace(/PFN|PROC/g, '') +
+					   '.*';
+					var re_obj = new RegExp(re_str, 'gmi');
+					command.proto = namespace.source.match(re_obj)[0];
+					
+					// Let's get the command name
+					re_str = command.ptrname.replace(/PFN|PROC/g, '');
+					re_obj = new RegExp(re_str, 'gi');
+					command.name = command.proto.match(re_obj)[0];
+				}
 				
 				_namespaces[index].commands.push(command);
 				match = regex.exec(namespace.source);
@@ -280,11 +359,27 @@ function GlCoreWriter(parser) {
 	this.source = "";
 	
 	this.WriteHeader = function() {
-		var _ns = parser.GetNamespaces();
+		var _ns = this.parser.GetNamespaces();
+		var _header = '';
+		
+		_header += '#include <cstddef>\r\n';
+		_header += '#include <cstdint>\r\n';
+		_header += '\r\n';
+		_header += '#ifndef APIENTRY\r\n'
+		_header += '#ifdef _WIN32\r\n'
+		_header += '#define APIENTRY __stdcall\r\n'
+		_header += '#else\r\n'
+		_header += '#define APIENTRY\r\n'
+		_header += '#endif //!_WIN32\r\n'
+		_header += '#endif //!APIENTRY\r\n\r\n'
+		
 		_ns.forEach(function(namespace) {
-			// TODO
+			_header += namespace.AsString();
 		});
+		this.header = _header;
 	}
+	
+	this.WriteHeader();
 }
 
 module.exports = {
