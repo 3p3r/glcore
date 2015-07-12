@@ -275,7 +275,16 @@ function GlCoreWriter(parser) {
 	// Just in case...
 	parser.Parse();
 	
-	// TODO
+	this.parser = parser;
+	this.header = "";
+	this.source = "";
+	
+	this.WriteHeader = function() {
+		var _ns = parser.GetNamespaces();
+		_ns.forEach(function(namespace) {
+			// TODO
+		});
+	}
 }
 
 module.exports = {
