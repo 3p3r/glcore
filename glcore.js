@@ -261,7 +261,22 @@ function GlCoreParser() {
 	this.Parse();
 }
 
+/*!
+ * @class GlCoreWriter
+ * @brief Generates the C++ header based on what parser has parsed.
+ */
+function GlCoreWriter(parser) {
+	if (!(parser instanceof GlCoreParser))
+		throw "Invalid Parser type passed. Please pass a GlCoreParser";
+	
+	// Just in case...
+	parser.Parse();
+	
+	// TODO
+}
+
 module.exports = {
 	'header' : GlCoreHeader ,
-	'parser' : GlCoreParser
+	'parser' : GlCoreParser ,
+	'writer' : GlCoreWriter
 }
