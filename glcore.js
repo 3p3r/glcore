@@ -54,6 +54,8 @@ function Namespace(codename) {
 	this.defines  = [];
 	this.types    = [];
 	this.empty    = false;
+	this.major    = 0;
+	this.minor    = 0;
 	
 	// Do we have a valid codename ?
 	if (codename.indexOf("GL_") < 0) {
@@ -61,18 +63,19 @@ function Namespace(codename) {
 	}
 	// store the codename
 	this.codename = codename;
-	codename = codename.toLowerCase()
 	
-	if (codename.indexOf("version") > 0) {
+	if (codename.indexOf("VERSION") > 0) {
 		// This is not a vendor / extension namespace
-		var regex = /gl_version_([0-9])_([0-9])/g;
+		var regex = /GL_VERSION_([0-9])_([0-9])/g;
 		var match = regex.exec(codename);
 		var version_major = match[1];
 		var version_minor = match[2];
+		this.major = +version_major;
+		this.minor = +version_minor;
 		this.name = "v" + version_major + version_minor;
 	} else {
 		// belongs to an extension and has a vendor
-		var regex = /gl_([a-z0-9]+)_(.+)/g;
+		var regex = /GL_([A-Za-z0-9]+)_(.+)/g;
 		var match = regex.exec(codename);
 		var vendor = match[1];
 		var extname = match[2];
