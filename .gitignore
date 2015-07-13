@@ -28,3 +28,7 @@ node_modules
 
 /glcorearb.h
 /test.js
+/gl.xml
+/reg.py
+/test.py
+*.pyc
