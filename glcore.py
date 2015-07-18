@@ -100,6 +100,7 @@ class CppOutputGenerator(OutputGenerator):
 		self.dependentVersion = None #highest version available
 		self.enumTypes = { 'i' : '', 'u': '', 'ull' : '' }
 		self.groupDict = None
+		self.prototypes = ''
 	
 	def makeGroupDictIfNotExist(self, elem):
 		if self.groupDict == None:
@@ -139,6 +140,7 @@ class CppOutputGenerator(OutputGenerator):
 		
 	def endFeature(self):
 		self.genEnums()
+		self.genCmds()
 		self.genNamespaceEnd()
 		self.currentFeature = None
 		OutputGenerator.endFeature(self)
@@ -240,6 +242,12 @@ class CppOutputGenerator(OutputGenerator):
 
 	def genCmd(self, cmdinfo, name):
 		OutputGenerator.genCmd(self, cmdinfo, name)
+		self.prototypes += (self.makePrototype(cmdinfo.elem))
+	
+	def genCmds(self):
+		if self.prototypes != '':
+			self.writeline(self.prototypes)
+		self.prototypes = ''
 	
 	def makePrototype(self, cmd):
 		proto = cmd.find('proto')
