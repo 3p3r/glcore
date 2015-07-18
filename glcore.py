@@ -36,6 +36,29 @@ prefixHeaderString = '''#pragma once
 #	   define APIENTRY
 #   endif
 #endif /* APIENTRY */
+
+#if defined _WIN32 || defined __CYGWIN__
+#	define GLCOREDLL_IMPORT __declspec(dllimport)
+#	define GLCOREDLL_EXPORT __declspec(dllexport)
+#else
+#	if __GNUC__ >= 4
+#		define GLCOREDLL_IMPORT __attribute__ ((visibility ("default")))
+#		define GLCOREDLL_EXPORT __attribute__ ((visibility ("default")))
+#	else
+#		define GLCOREDLL_IMPORT
+#		define GLCOREDLL_EXPORT
+#	endif /* __GNUC__ */
+#endif /* _WIN32 */
+
+#ifdef GLCORE_DLL // defined if GlCore is compiled as a DLL
+#	ifdef GLCORE_DLL_EXPORTS // defined if we are building the GlCore DLL (instead of using it)
+#		define GLCOREAPI GLCOREDLL_EXPORT APIENTRY
+#	else
+#		define GLCOREAPI GLCOREDLL_IMPORT APIENTRY
+#	endif /* GLCORE_DLL_EXPORTS */
+#else // GLCORE_DLL is not defined: this means GlCore is a static lib.
+#	define GLCOREAPI APIENTRY
+#endif /* GLCORE_DLL */
 '''
 
 class CppGeneratorOptions(GeneratorOptions):
@@ -50,7 +73,7 @@ class CppGeneratorOptions(GeneratorOptions):
 				 addExtensions = None,
 				 removeExtensions = None,
 				 sortProcedure = regSortFeatures,
-				 apicall = 'GLAPI ',
+				 apicall = 'GLCOREAPI ',
 				 apientry = 'APIENTRY ',
 				 apientryp = 'APIENTRYP '):
 		GeneratorOptions.__init__(self, filename, apiname, profile,
@@ -217,6 +240,27 @@ class CppOutputGenerator(OutputGenerator):
 
 	def genCmd(self, cmdinfo, name):
 		OutputGenerator.genCmd(self, cmdinfo, name)
+	
+	def makePrototype(self, cmd):
+		proto = cmd.find('proto')
+		params = cmd.findall('param')
+		pdecl = self.genOpts.apicall
+		pdecl += noneStr(proto.text)
+		for elem in proto:
+			text = noneStr(elem.text)
+			tail = noneStr(elem.tail)
+			pdecl += text + tail
+		n = len(params)
+		paramdecl = ' ('
+		if n > 0:
+			for i in range(0,n):
+				paramdecl += ''.join([t for t in params[i].itertext()])
+				if (i < n - 1):
+					paramdecl += ', '
+		else:
+			paramdecl += 'void'
+		paramdecl += ");\n";
+		return pdecl + paramdecl
 
 # Load & parse registry
 reg = Registry()
