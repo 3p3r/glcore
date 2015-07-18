@@ -76,6 +76,19 @@ class CppOutputGenerator(OutputGenerator):
 		self.rootNamespace = ''
 		self.dependentVersion = None #highest version available
 		self.enumTypes = { 'i' : '', 'u': '', 'ull' : '' }
+		self.groupDict = None
+	
+	def makeGroupDictIfNotExist(self, elem):
+		if self.groupDict == None:
+			self.groupDict = {}
+			# hack: to find all groups
+			for group in elem.getparent().findall('groups/group'):
+				group_name = group.get('name')
+				for enum in group.findall('enum'):
+					enum_name = enum.get('name')
+					if enum_name not in self.groupDict:
+						self.groupDict[enum_name] = []
+					self.groupDict[enum_name].append(group_name)
 	
 	def newline(self):
 		write('', file=self.outFile)
@@ -96,6 +109,7 @@ class CppOutputGenerator(OutputGenerator):
 		OutputGenerator.endFile(self)
 		
 	def beginFeature(self, interface, emit):
+		self.makeGroupDictIfNotExist(interface)
 		OutputGenerator.beginFeature(self, interface, emit)
 		self.currentFeature = FeatureInfo(interface)
 		self.genNamespaceBegin()
@@ -176,7 +190,13 @@ class CppOutputGenerator(OutputGenerator):
 			t = 'i' #hack: to force type to be int for non suffixed ones
 		if t == 'i' or t == 'u' or t == 'ull':
 			self.enumTypes[t] += name.ljust(47) + ' = ' + enuminfo.elem.get('value') + ( t if t != 'i' else '' )
-			self.enumTypes[t] += ",\n"
+			self.enumTypes[t] += ","
+			if name in self.groupDict:
+				self.enumTypes[t] += ' /* '
+				for group in self.groupDict[name]:
+					self.enumTypes[t] += (group + ' ')
+				self.enumTypes[t] += '*/'
+			self.enumTypes[t] += "\n"
 		else:
 			raise Exception('Unknown enum type found: ' + t)
 	
