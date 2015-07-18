@@ -204,14 +204,14 @@ class CppOutputGenerator(OutputGenerator):
 		for enumType in self.enumTypes:
 			enumBody = self.enumTypes[enumType]
 			if enumBody != '':
-				enumBody += '}' #hack alert!
+				enumBody += '}; //!enum'
 				cppType = ''
 				if enumType == 'u':
 					cppType = ' : unsigned'
 				elif enumType == 'ull':
 					cppType = ' : unsigned long long'
 				self.writeline('enum' + cppType + ' {')
-				self.writeline(enumBody.replace(',\n}', '\n}; //!enum'))
+				self.writeline(enumBody)
 				self.newline()
 				self.enumTypes[enumType] = ''
 
