@@ -52,12 +52,12 @@ prefixHeaderString = '''#pragma once
 
 #ifdef GLCORE_DLL // defined if GlCore is compiled as a DLL
 #	ifdef GLCORE_DLL_EXPORTS // defined if we are building the GlCore DLL (instead of using it)
-#		define GLCOREAPI GLCOREDLL_EXPORT APIENTRY
+#		define GLCOREAPI GLCOREDLL_EXPORT
 #	else
-#		define GLCOREAPI GLCOREDLL_IMPORT APIENTRY
+#		define GLCOREAPI GLCOREDLL_IMPORT
 #	endif /* GLCORE_DLL_EXPORTS */
 #else // GLCORE_DLL is not defined: this means GlCore is a static lib.
-#	define GLCOREAPI APIENTRY
+#	define GLCOREAPI
 #endif /* GLCORE_DLL */
 '''
 
@@ -101,6 +101,7 @@ class CppOutputGenerator(OutputGenerator):
 		self.enumTypes = { 'i' : '', 'u': '', 'ull' : '' }
 		self.groupDict = None
 		self.prototypes = ''
+		self.types = ''
 	
 	def makeGroupDictIfNotExist(self, elem):
 		if self.groupDict == None:
@@ -139,6 +140,7 @@ class CppOutputGenerator(OutputGenerator):
 		self.genNamespaceBegin()
 		
 	def endFeature(self):
+		self.genTypes()
 		self.genEnums()
 		self.genCmds()
 		self.genNamespaceEnd()
@@ -206,8 +208,14 @@ class CppOutputGenerator(OutputGenerator):
 			s = s.replace(' ;', ';')
 			s = s.replace('  *)', ' *)')
 			s = s.replace('typedef', 'using ' + name + ' =')
-		self.writeline(s)
-
+			s += '\n'
+		self.types += s
+	
+	def genTypes(self):
+		if self.types != '':
+			self.writeline(self.types)
+		self.types = ''
+	
 	def genEnum(self, enuminfo, name):
 		OutputGenerator.genEnum(self, enuminfo, name)
 		t = enuminfo.elem.get('type')
@@ -257,7 +265,10 @@ class CppOutputGenerator(OutputGenerator):
 		for elem in proto:
 			text = noneStr(elem.text)
 			tail = noneStr(elem.tail)
-			pdecl += text + tail
+			if (elem.tag == 'name'):
+				pdecl += self.genOpts.apientry + text + tail
+			else:
+				pdecl += text + tail
 		n = len(params)
 		paramdecl = ' ('
 		if n > 0:
