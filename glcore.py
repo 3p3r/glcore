@@ -22,6 +22,7 @@ print 'Began API generation...'
 from reg import *
 
 prefixHeaderString = '''#pragma once
+
 #include <cinttypes>
 #include <cstddef>
 
