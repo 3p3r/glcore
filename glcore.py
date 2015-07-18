@@ -21,6 +21,21 @@ if not os.path.isfile('reg.py') or not os.path.isfile('reg.py'):
 print 'Began API generation...'
 from reg import *
 
+prefixHeaderString = '''#pragma once
+#include <cinttypes>
+
+#if !defined(_WIN32) && (defined(__WIN32__) || defined(WIN32) || defined(__MINGW32__))
+#	define _WIN32
+#endif /* _WIN32 */
+#ifndef APIENTRY
+#   ifdef _WIN32
+#	   define APIENTRY __stdcall
+#   else
+#	   define APIENTRY
+#   endif
+#endif /* APIENTRY */
+'''
+
 class CppGeneratorOptions(GeneratorOptions):
 	"""Represents options during C++ header generation"""
 	def __init__(self,
@@ -69,6 +84,7 @@ class CppOutputGenerator(OutputGenerator):
 	def beginFile(self, genOpts):
 		OutputGenerator.beginFile(self, genOpts)
 		self.rootNamespace = genOpts.apiname + genOpts.profile
+		self.writeline(prefixHeaderString)
 		self.writeline('namespace ' + self.rootNamespace)
 		self.writeline('{')
 		self.newline();
@@ -134,6 +150,22 @@ class CppOutputGenerator(OutputGenerator):
 
 	def genType(self, typeinfo, name):
 		OutputGenerator.genType(self, typeinfo, name)
+		if name in ('inttypes', 'stddef'):
+			return
+		typeElem = typeinfo.elem
+		s = noneStr(typeElem.text)
+		for elem in typeElem:
+			if (elem.tag == 'apientry'):
+				s += self.genOpts.apientry + noneStr(elem.tail)
+			else:
+				s += noneStr(elem.tail)
+		if name.startswith('struct'):
+			s = name + s;
+		else:
+			s = s.replace(' ;', ';')
+			s = s.replace('  *)', ' *)')
+			s = s.replace('typedef', 'using ' + name + ' =')
+		self.writeline(s)
 
 	def genEnum(self, enuminfo, name):
 		OutputGenerator.genEnum(self, enuminfo, name)
