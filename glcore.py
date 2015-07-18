@@ -58,6 +58,7 @@ class CppOutputGenerator(OutputGenerator):
 		self.currentNamespace = ''
 		self.rootNamespace = ''
 		self.dependentVersion = None #highest version available
+		self.enumTypes = { 'i' : '', 'u': '', 'ull' : '' }
 	
 	def newline(self):
 		write('', file=self.outFile)
@@ -82,6 +83,7 @@ class CppOutputGenerator(OutputGenerator):
 		self.genNamespaceBegin()
 		
 	def endFeature(self):
+		self.genEnums()
 		self.genNamespaceEnd()
 		self.currentFeature = None
 		OutputGenerator.endFeature(self)
@@ -135,6 +137,29 @@ class CppOutputGenerator(OutputGenerator):
 
 	def genEnum(self, enuminfo, name):
 		OutputGenerator.genEnum(self, enuminfo, name)
+		t = enuminfo.elem.get('type')
+		if t == '' or t == None:
+			t = 'i' #hack: to force type to be int for non suffixed ones
+		if t == 'i' or t == 'u' or t == 'ull':
+			self.enumTypes[t] += name.ljust(47) + ' = ' + enuminfo.elem.get('value') + ( t if t != 'i' else '' )
+			self.enumTypes[t] += ",\n"
+		else:
+			raise Exception('Unknown enum type found: ' + t)
+	
+	def genEnums(self):
+		for enumType in self.enumTypes:
+			enumBody = self.enumTypes[enumType]
+			if enumBody != '':
+				enumBody += '}' #hack alert!
+				cppType = ''
+				if enumType == 'u':
+					cppType = ' : unsigned'
+				elif enumType == 'ull':
+					cppType = ' : unsigned long long'
+				self.writeline('enum' + cppType + ' {')
+				self.writeline(enumBody.replace(',\n}', '\n}; //!enum'))
+				self.newline()
+				self.enumTypes[enumType] = ''
 
 	def genCmd(self, cmdinfo, name):
 		OutputGenerator.genCmd(self, cmdinfo, name)
