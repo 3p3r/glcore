@@ -261,6 +261,7 @@ class CppOutputGenerator(OutputGenerator):
 
 	def genCmd(self, cmdinfo, name):
 		OutputGenerator.genCmd(self, cmdinfo, name)
+		self.prototypes += self.makeApiDocumentation(name) + '\n'
 		self.prototypes += (self.makePrototype(cmdinfo.elem))
 	
 	def genCmds(self):
@@ -307,6 +308,20 @@ class CppOutputGenerator(OutputGenerator):
 		overview += 'Full extension documentation available at:\n'
 		overview += url
 		return '/*\nExtension overview:\n' + (overview if overview != '' else 'not available.') + '\n*/'
+	
+	def makeApiDocumentation(self, name):
+		print 'Generating documentation for ' + name
+		url = 'https://cvs.khronos.org/svn/repos/ogl/trunk/ecosystem/public/sdk/docs/man4/' + name + '.xml'
+		doc = urllib.urlopen(url).read().decode('utf-8')
+		try:
+			tree = etree.fromstring(doc)
+		except:
+			return '/* Documentation not available. */'
+		if tree != None:
+			elem = tree.find('{*}refnamediv/{*}refpurpose')
+			if elem != None:
+				return '/* ' + elem.text + ' */'
+		return '/* Documentation not available. */'
 
 # Load & parse registry
 reg = Registry()
