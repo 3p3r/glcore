@@ -195,6 +195,8 @@ class CppOutputGenerator(OutputGenerator):
 		self.currentNamespace = self.currentFeature.name.replace('GL_' + self.currentFeature.category + '_', '').lower()
 		self.writeline('namespace ' + self.currentNamespace + ' {')
 		self.newline()
+		self.writeline('/* Documentation: https://www.opengl.org/registry/specs/' + self.currentFeature.category + '/' + self.currentNamespace + '.txt */')
+		self.newline()
 	
 	def genExtNamespaceEnd(self):
 		self.writeline('} //!namespace ' + self.currentNamespace)
