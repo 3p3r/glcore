@@ -102,6 +102,15 @@ class CppOutputGenerator(OutputGenerator):
 		self.groupDict = None
 		self.prototypes = ''
 		self.types = ''
+		self.enums = ''
+	
+	def resetState(self):
+		self.enums = ''
+		self.types = ''
+		self.prototypes = ''
+	
+	def isEmpty(self):
+		return self.enums == '' and self.types == '' and self.prototypes == ''
 	
 	def makeGroupDictIfNotExist(self, elem):
 		if self.groupDict == None:
@@ -137,14 +146,15 @@ class CppOutputGenerator(OutputGenerator):
 		self.makeGroupDictIfNotExist(interface)
 		OutputGenerator.beginFeature(self, interface, emit)
 		self.currentFeature = FeatureInfo(interface)
-		self.genNamespaceBegin()
+		self.resetState()
 		
 	def endFeature(self):
-		self.genTypes()
-		self.genEnums()
-		self.genCmds()
-		self.genNamespaceEnd()
-		self.currentFeature = None
+		if not self.isEmpty():
+			self.genNamespaceBegin()
+			self.genTypes()
+			self.genEnums()
+			self.genCmds()
+			self.genNamespaceEnd()
 		OutputGenerator.endFeature(self)
 	
 	def isFeatureApi(self):
@@ -243,10 +253,11 @@ class CppOutputGenerator(OutputGenerator):
 					cppType = ' : unsigned'
 				elif enumType == 'ull':
 					cppType = ' : unsigned long long'
-				self.writeline('enum' + cppType + ' {')
-				self.writeline(enumBody)
-				self.newline()
+				self.enums += ('enum' + cppType + ' {\n')
+				self.enums += enumBody
+				self.enums += '\n'
 				self.enumTypes[enumType] = ''
+		self.writeline(self.enums)
 
 	def genCmd(self, cmdinfo, name):
 		OutputGenerator.genCmd(self, cmdinfo, name)
