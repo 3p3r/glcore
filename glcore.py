@@ -74,15 +74,13 @@ class CppGeneratorOptions(GeneratorOptions):
 				 removeExtensions = None,
 				 sortProcedure = regSortFeatures,
 				 apicall = 'GLCOREAPI ',
-				 apientry = 'APIENTRY ',
-				 apientryp = 'APIENTRYP '):
+				 apientry = 'APIENTRY '):
 		GeneratorOptions.__init__(self, filename, apiname, profile,
 			versions, emitversions, defaultExtensions,
 			addExtensions, removeExtensions, sortProcedure)
 		
 		self.apicall		 = apicall
 		self.apientry		= apientry
-		self.apientryp	   = apientryp
 
 from pprint import pprint
 
