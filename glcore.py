@@ -1,4 +1,4 @@
-import os, urllib
+import os, urllib, re
 
 REG_PY_URL = 'https://cvs.khronos.org/svn/repos/ogl/trunk/doc/registry/public/api/reg.py';
 GL_XML_URL = 'https://cvs.khronos.org/svn/repos/ogl/trunk/doc/registry/public/api/gl.xml';
@@ -195,7 +195,7 @@ class CppOutputGenerator(OutputGenerator):
 		self.currentNamespace = self.currentFeature.name.replace('GL_' + self.currentFeature.category + '_', '').lower()
 		self.writeline('namespace ' + self.currentNamespace + ' {')
 		self.newline()
-		self.writeline('/* Documentation: https://www.opengl.org/registry/specs/' + self.currentFeature.category + '/' + self.currentNamespace + '.txt */')
+		self.writeline(self.makeExtendionDocumentation(self.currentFeature.category, self.currentNamespace))
 		self.newline()
 	
 	def genExtNamespaceEnd(self):
@@ -291,6 +291,22 @@ class CppOutputGenerator(OutputGenerator):
 			paramdecl += 'void'
 		paramdecl += ");\n";
 		return pdecl + paramdecl
+	
+	def makeExtendionDocumentation(self, cat, name):
+		print 'Generating documentation for ' + name + ' in category ' + cat
+		url = 'https://www.opengl.org/registry/specs/' + cat + '/' + name + '.txt'
+		doc = urllib.urlopen(url).read().decode('utf-8')
+		regex = 'Overview\n\n((^ +\S.*\n)+)'
+		overview = ''
+		result = re.search(regex, doc, re.M)
+		if result != None:
+			overview = re.search(regex, doc, re.M).group(1)
+			overview = re.sub('^ +', '', overview, 0, re.M)
+		if overview != '':
+			overview = ((overview[:300] + '...\n\n') if len(overview) > 300 else overview + '\n')
+		overview += 'Full extension documentation available at:\n'
+		overview += url
+		return '/*\nExtension overview:\n' + (overview if overview != '' else 'not available.') + '\n*/'
 
 # Load & parse registry
 reg = Registry()
